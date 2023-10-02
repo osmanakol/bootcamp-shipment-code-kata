@@ -4,10 +4,15 @@ import java.util.List;
 
 public class Basket {
 
+    public Basket(ShipmentSizeCalculator shipmentSizeCalculator) {
+        this.shipmentSizeCalculator = shipmentSizeCalculator;
+    }
+
     private List<Product> products;
+    private final ShipmentSizeCalculator shipmentSizeCalculator;
 
     public ShipmentSize getShipmentSize() {
-        return null;
+        return shipmentSizeCalculator.calculate(getProducts());
     }
 
     public List<Product> getProducts() {
