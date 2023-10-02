@@ -1,4 +1,6 @@
 import com.trendyol.shipment.*;
+import com.trendyol.shipment.exception.EmptyBasketException;
+import com.trendyol.shipment.exception.MaximumBasketSizeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,6 +15,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class BasketTest {
@@ -25,6 +28,22 @@ class BasketTest {
         basket = new Basket(shipmentSizeCalculator);
     }
 
+    @ParameterizedTest
+    @MethodSource("shipmentSizeOfProductAndExceptionType")
+    void shouldThrowException(List<ShipmentSize> shipmentSizesOfProducts, RuntimeException exception) {
+        final var products = shipmentSizesOfProducts.stream().map(Product::create).collect(Collectors.toList());
+
+        basket.setProducts(products);
+
+        assertThrows(exception.getClass(), () -> basket.getShipmentSize());
+    }
+
+    private static Stream<Arguments> shipmentSizeOfProductAndExceptionType() {
+        return Stream.of(
+                Arguments.of(List.of(), new EmptyBasketException()),
+                Arguments.of(Arrays.asList(ShipmentSize.SMALL, ShipmentSize.MEDIUM, ShipmentSize.LARGE, ShipmentSize.X_LARGE, ShipmentSize.X_LARGE, ShipmentSize.X_LARGE), new MaximumBasketSizeException())
+        );
+    }
     @ParameterizedTest
     @MethodSource("shipmentSizeOfProductsAndBasketShipmentSize")
     void shouldGetOrderShipmentSizeAsExpected(List<ShipmentSize> shipmentSizesOfProducts, ShipmentSize orderShipmentSize) {
