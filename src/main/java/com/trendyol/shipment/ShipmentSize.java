@@ -10,6 +10,9 @@ public enum ShipmentSize {
     LARGE,
     X_LARGE;
 
+    public ShipmentSize get() {
+        return this;
+    }
     public ShipmentSize getUpper() {
         int nextOrdinal= this.ordinal() + 1;
 
