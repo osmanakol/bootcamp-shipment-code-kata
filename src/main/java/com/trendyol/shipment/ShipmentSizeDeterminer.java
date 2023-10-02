@@ -9,9 +9,10 @@ import java.util.stream.Collectors;
 public class ShipmentSizeDeterminer implements ShipmentSizeCalculator {
 
     private static final int OCCURRENCE_THRESHOLD = 3;
+    private static final int MAXIMUM_BASKET_SIZE_LIMIT = 5;
     @Override
     public ShipmentSize calculate(List<Product> products) {
-        if (products.size() > 5) throw new MaximumBasketSizeException();
+        if (products.size() > MAXIMUM_BASKET_SIZE_LIMIT) throw new MaximumBasketSizeException();
         if (products.isEmpty()) throw new EmptyBasketException();
 
         Map<ShipmentSize, Long> groupedShipmentSize = groupByShipmentSize(products);
