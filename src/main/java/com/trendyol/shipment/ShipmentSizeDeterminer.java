@@ -15,33 +15,26 @@ public class ShipmentSizeDeterminer implements ShipmentSizeCalculator {
         if (products.size() > MAXIMUM_BASKET_SIZE_LIMIT) throw new MaximumBasketSizeException();
         if (products.isEmpty()) throw new EmptyBasketException();
 
-        Map<ShipmentSize, Long> groupedShipmentSize = groupByShipmentSize(products);
-        return thresholdRule(groupedShipmentSize);
+        List<ShipmentSize> productSizes = products.stream().map(Product::getSize).toList();
+        return thresholdRule(productSizes);
     }
 
-    private ShipmentSize thresholdRule (Map<ShipmentSize, Long> groupedShipmentSize) {
-        ShipmentSize size = null;
+    private ShipmentSize thresholdRule (List<ShipmentSize> productSizes) {
+        Map<ShipmentSize, Long> groupedShipmentSize = groupByShipmentSize(productSizes);
 
-        Optional<ShipmentSize> first = groupedShipmentSize.entrySet().stream()
+        ShipmentSize result = groupedShipmentSize.entrySet().stream()
                 .filter(entry -> entry.getValue() >= OCCURRENCE_THRESHOLD)
-                .map(Map.Entry::getKey)
-                .findFirst();
+                .map(entry -> entry.getKey().getUpper())
+                .findFirst()
+                .orElse(ShipmentSize.getLargestShipmentSize(productSizes));
 
-        if (first.isPresent()) {
-            size = first.get().getUpper();
-        } else {
-            size = ShipmentSize.getLargestShipmentSize(
-                    groupedShipmentSize.keySet().
-                            stream().
-                            toList());
-        }
-
-        return size;
+        return result;
     }
 
-    private Map<ShipmentSize, Long> groupByShipmentSize(List<Product> products) {
-        Map<ShipmentSize, Long> groupedBasketSize = products.stream()
-                .collect(Collectors.groupingBy(Product::getSize, Collectors.counting()));
+
+    private Map<ShipmentSize, Long> groupByShipmentSize(List<ShipmentSize> productSizes) {
+        Map<ShipmentSize, Long> groupedBasketSize = productSizes.stream()
+                .collect(Collectors.groupingBy(ShipmentSize::get, Collectors.counting()));
 
         return groupedBasketSize;
     }
